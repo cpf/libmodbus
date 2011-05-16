@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -276,7 +277,7 @@ static int _modbus_tcp_connect(modbus_t *ctx)
         {
             tmp = ctx->debug_str;
         }
-        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sConnecting to %s\n", ctx_tcp->ip);
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sConnecting to %s\n", tmp, ctx_tcp->ip);
         free(tmp);
         /*printf("Connecting to %s\n", ctx_tcp->ip);*/
     }

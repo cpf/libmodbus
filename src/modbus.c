@@ -19,6 +19,7 @@
  * http://libmodbus.org/
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -174,7 +175,7 @@ static int send_msg(modbus_t *ctx, uint8_t *msg, int msg_length)
             {
                 tmp = ctx->debug_str;
             }
-            ctx->debug_str_size = asprintf(&ctx->debug_str, "%s[%.2X]", tmp, req[i]);
+            ctx->debug_str_size = asprintf(&ctx->debug_str, "%s[%.2X]", tmp, msg[i]);
             free(tmp);
         }
         ctx->debug_str_size = asprintf(&ctx->debug_str, "%s\n", ctx->debug_str);
