@@ -90,11 +90,20 @@ const char *modbus_strerror(int errnum) {
 void _error_print(modbus_t *ctx, const char *context)
 {
     if (ctx->debug) {
-        fprintf(stderr, "ERROR %s", modbus_strerror(errno));
+        char *tmp = ctx->debug_str;
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sERROR %s", tmp, modbus_strerror(errno));
+        free(tmp);
+        /*fprintf(stderr, "ERROR %s", modbus_strerror(errno));*/
         if (context != NULL) {
-            fprintf(stderr, ": %s\n", context);
+            char *tmp = ctx->debug_str;
+            ctx->debug_str_size = asprintf(&ctx->debug_str, "%s: %s\n", tmp, context);
+            free(tmp);
+            /*fprintf(stderr, ": %s\n", context);*/
         } else {
-            fprintf(stderr, "\n");
+            char *tmp = ctx->debug_str;
+            ctx->debug_str_size = asprintf(&ctx->debug_str, "%s\n", tmp);
+            free(tmp);
+            /*fprintf(stderr, "\n");*/
         }
     }
 }
@@ -444,7 +453,11 @@ static int receive_msg(modbus_t *ctx, uint8_t *msg, msg_type_t msg_type)
     }
 
     if (ctx->debug)
-        printf("\n");
+    {
+        char *tmp = ctx->debug_str;
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%s\n", tmp);
+        free(tmp);
+    }
 
     return ctx->backend->check_integrity(ctx, msg, msg_length);
 }
