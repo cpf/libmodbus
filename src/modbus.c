@@ -137,6 +137,27 @@ static unsigned int compute_response_length_from_request(modbus_t *ctx, uint8_t 
     return offset + length + ctx->backend->checksum_length;
 }
 
+void free_debug_message(modbus_t *ctx)
+{
+    free(ctx->debug_str);
+    ctx->debug_str = NULL;
+}
+
+int get_debug_message_size(modbus_t *ctx)
+{
+    return ctx->debug_str_size;
+}
+
+void get_debug_message(modbus_t *ctx, char *debug_str)
+{
+    if (sizeof(debug_str) < sizeof(ctx->debug_str))
+    {
+        return;
+    }
+    strcpy(debug_str, ctx->debug_str);
+    free_debug_message(ctx);
+}
+
 /* Sends a request/response */
 static int send_msg(modbus_t *ctx, uint8_t *msg, int msg_length)
 {
@@ -147,8 +168,16 @@ static int send_msg(modbus_t *ctx, uint8_t *msg, int msg_length)
 
     if (ctx->debug) {
         for (i = 0; i < msg_length; i++)
-            printf("[%.2X]", msg[i]);
-        printf("\n");
+        {
+            char *tmp = {0};
+            if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+            {
+                tmp = ctx->debug_str;
+            }
+            ctx->debug_str_size = asprintf(&ctx->debug_str, "%s[%.2X]", tmp, req[i]);
+            free(tmp);
+        }
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%s\n", ctx->debug_str);
     }
 
     /* In recovery mode, the write command will be issued until to be
@@ -308,13 +337,13 @@ static int receive_msg(modbus_t *ctx, uint8_t *msg, msg_type_t msg_type)
     int msg_length = 0;
     _step_t step;
 
-    if (ctx->debug) {
+    /*if (ctx->debug) {
         if (msg_type == MSG_INDICATION) {
             printf("Waiting for a indication...\n");
         } else {
             printf("Waiting for a confirmation...\n");
         }
-    }
+    }*/
 
     /* Add a file descriptor to the set */
     FD_ZERO(&rfds);
@@ -364,7 +393,12 @@ static int receive_msg(modbus_t *ctx, uint8_t *msg, msg_type_t msg_type)
         if (ctx->debug) {
             int i;
             for (i=0; i < rc; i++)
-                printf("<%.2X>", msg[msg_length + i]);
+                /*printf("<%.2X>", msg[msg_length + i]);*/
+            {
+                char *tmp = ctx->debug_str;
+                ctx->debug_str_size = asprintf(&ctx->debug_str, "%s<%.2X>", tmp, msg[msg_length + i]);
+                free(tmp);
+            }
         }
 
         /* Sums bytes received */
@@ -1320,6 +1354,7 @@ void _modbus_init_common(modbus_t *ctx)
     ctx->s = -1;
 
     ctx->debug = FALSE;
+    ctx->debug_str = NULL;
     ctx->error_recovery = FALSE;
 
     ctx->response_timeout.tv_sec = 0;

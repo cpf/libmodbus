@@ -207,6 +207,9 @@ uint8_t modbus_get_byte_from_bits(const uint8_t *src, int address, unsigned int 
 float modbus_get_float(const uint16_t *src);
 void modbus_set_float(float f, uint16_t *dest);
 
+void get_debug_message(modbus_t *ctx, char *debug_str);
+void free_debug_message(modbus_t *ctx);
+
 #include "modbus-tcp.h"
 #include "modbus-rtu.h"
 

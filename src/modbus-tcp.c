@@ -196,8 +196,16 @@ int _modbus_tcp_pre_check_confirmation(modbus_t *ctx, const uint8_t *req,
     /* Check TID */
     if (req[0] != rsp[0] || req[1] != rsp[1]) {
         if (ctx->debug) {
-            fprintf(stderr, "Invalid TID received 0x%X (not 0x%X)\n",
-                    (rsp[0] << 8) + rsp[1], (req[0] << 8) + req[1]);
+            char *tmp = {0};
+            if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+            {
+                tmp = ctx->debug_str;
+            }
+            ctx->debug_str_size = asprintf(&ctx->debug_str, "%sInvalid TID received 0x%X (not 0x%X)\n",
+                tmp, (rsp[0] << 8) + rsp[1], (req[0] << 8) + req[1]);
+            free(tmp);
+            /*fprintf(stderr, "Invalid TID received 0x%X (not 0x%X)\n",
+                    (rsp[0] << 8) + rsp[1], (req[0] << 8) + req[1]);*/
         }
         errno = EMBBADDATA;
         return -1;
@@ -261,8 +269,16 @@ static int _modbus_tcp_connect(modbus_t *ctx)
         return -1;
     }
 
-    if (ctx->debug) {
-        printf("Connecting to %s\n", ctx_tcp->ip);
+    if (ctx->debug)
+    {
+        char *tmp = {0};
+        if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+        {
+            tmp = ctx->debug_str;
+        }
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sConnecting to %s\n", ctx_tcp->ip);
+        free(tmp);
+        /*printf("Connecting to %s\n", ctx_tcp->ip);*/
     }
 
     addr.sin_family = AF_INET;
@@ -368,7 +384,14 @@ int _modbus_tcp_flush(modbus_t *ctx)
         }
 #endif
         if (ctx->debug && rc != -1) {
-            printf("%d bytes flushed\n", rc);
+            char *tmp = {0};
+            if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+            {
+                tmp = ctx->debug_str;
+            }
+            ctx->debug_str_size = asprintf(&ctx->debug_str, "%s%d bytes flushed\n", tmp, rc);
+            free(tmp);
+            /*printf("%d bytes flushed\n", rc);*/
         }
     } while (rc == MODBUS_TCP_MAX_ADU_LENGTH);
 
@@ -558,8 +581,16 @@ int _modbus_tcp_select(modbus_t *ctx, fd_set *rfds, struct timeval *tv, int leng
     int s_rc;
     while ((s_rc = select(ctx->s+1, rfds, NULL, NULL, tv)) == -1) {
         if (errno == EINTR) {
-            if (ctx->debug) {
-                fprintf(stderr, "A non blocked signal was caught\n");
+            if (ctx->debug)
+            {
+                char *tmp = {0};
+                if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+                {
+                    tmp = ctx->debug_str;
+                }
+                ctx->debug_str_size = asprintf(&ctx->debug_str, "%sA non blocked signal was caught\n", tmp);
+                free(tmp);
+                /*fprintf(stderr, "A non blocked signal was caught\n");*/
             }
             /* Necessary after an error */
             FD_ZERO(rfds);
@@ -668,14 +699,28 @@ modbus_t* modbus_new_tcp(const char *ip, int port)
     dest_size = sizeof(char) * 16;
     ret_size = strlcpy(ctx_tcp->ip, ip, dest_size);
     if (ret_size == 0) {
-        fprintf(stderr, "The IP string is empty\n");
+        char *tmp = {0};
+        if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+        {
+            tmp = ctx->debug_str;
+        }
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sThe IP string is empty\n", tmp);
+        free(tmp);
+        /*fprintf(stderr, "The IP string is empty\n");*/
         modbus_free(ctx);
         errno = EINVAL;
         return NULL;
     }
 
     if (ret_size >= dest_size) {
-        fprintf(stderr, "The IP string has been truncated\n");
+        char *tmp = {0};
+        if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+        {
+            tmp = ctx->debug_str;
+        }
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sThe IP string has been truncated\n", tmp);
+        free(tmp);
+        /*fprintf(stderr, "The IP string has been truncated\n");*/
         modbus_free(ctx);
         errno = EINVAL;
         return NULL;
@@ -708,14 +753,28 @@ modbus_t* modbus_new_tcp_pi(const char *node, const char *service)
     dest_size = sizeof(char) * _MODBUS_TCP_PI_NODE_LENGTH;
     ret_size = strlcpy(ctx_tcp_pi->node, node, dest_size);
     if (ret_size == 0) {
-        fprintf(stderr, "The node string is empty\n");
+        char *tmp = {0};
+        if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+        {
+            tmp = ctx->debug_str;
+        }
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sThe node string is empty\n", tmp);
+        free(tmp);
+        /*fprintf(stderr, "The node string is empty\n");*/
         modbus_free(ctx);
         errno = EINVAL;
         return NULL;
     }
 
     if (ret_size >= dest_size) {
-        fprintf(stderr, "The node string has been truncated\n");
+        char *tmp = {0};
+        if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+        {
+            tmp = ctx->debug_str;
+        }
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sThe node string has been truncated\n", tmp);
+        free(tmp);
+        /*fprintf(stderr, "The node string has been truncated\n");*/
         modbus_free(ctx);
         errno = EINVAL;
         return NULL;
@@ -724,14 +783,28 @@ modbus_t* modbus_new_tcp_pi(const char *node, const char *service)
     dest_size = sizeof(char) * _MODBUS_TCP_PI_SERVICE_LENGTH;
     ret_size = strlcpy(ctx_tcp_pi->service, service, dest_size);
     if (ret_size == 0) {
-        fprintf(stderr, "The service string is empty\n");
+        char *tmp = {0};
+        if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+        {
+            tmp = ctx->debug_str;
+        }
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sThe service string is empty\n", tmp);
+        free(tmp);
+        /*fprintf(stderr, "The service string is empty\n");*/
         modbus_free(ctx);
         errno = EINVAL;
         return NULL;
     }
 
     if (ret_size >= dest_size) {
-        fprintf(stderr, "The service string has been truncated\n");
+        char *tmp = {0};
+        if (ctx->debug_str != 0 && strlen(ctx->debug_str) > 0)
+        {
+            tmp = ctx->debug_str;
+        }
+        ctx->debug_str_size = asprintf(&ctx->debug_str, "%sThe service string has been truncated\n", tmp);
+        free(tmp);
+        /*fprintf(stderr, "The service string has been truncated\n");*/
         modbus_free(ctx);
         errno = EINVAL;
         return NULL;

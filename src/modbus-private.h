@@ -105,6 +105,8 @@ struct _modbus {
     /* Socket or file descriptor */
     int s;
     int debug;
+    char *debug_str;
+    int debug_str_size;
     int error_recovery;
     struct timeval response_timeout;
     struct timeval byte_timeout;
